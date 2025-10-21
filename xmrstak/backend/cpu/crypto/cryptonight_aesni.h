@@ -151,35 +151,115 @@ static inline void _mm_store_si128(__m128i* ptr, __m128i val)
 }
 
 // ARM implementation of _mm_srli_si128
-static inline __m128i _mm_srli_si128(__m128i a, int imm)
+template<int imm>
+static inline __m128i _mm_srli_si128_impl(__m128i a)
 {
     if (imm >= 16) return _mm_setzero_si128();
     if (imm == 0) return a;
-    // Create zero vector and combine
     uint8x16_t zero = vdupq_n_u8(0);
     return vextq_u8(a, zero, imm);
 }
 
-// ARM implementation of _mm_alignr_epi8 (now _mm_srli_si128 is defined)
-static inline __m128i _mm_alignr_epi8(__m128i a, __m128i b, int imm)
+static inline __m128i _mm_srli_si128(__m128i a, int imm)
+{
+    switch(imm) {
+        case 0: return _mm_srli_si128_impl<0>(a);
+        case 1: return _mm_srli_si128_impl<1>(a);
+        case 2: return _mm_srli_si128_impl<2>(a);
+        case 3: return _mm_srli_si128_impl<3>(a);
+        case 4: return _mm_srli_si128_impl<4>(a);
+        case 5: return _mm_srli_si128_impl<5>(a);
+        case 6: return _mm_srli_si128_impl<6>(a);
+        case 7: return _mm_srli_si128_impl<7>(a);
+        case 8: return _mm_srli_si128_impl<8>(a);
+        case 9: return _mm_srli_si128_impl<9>(a);
+        case 10: return _mm_srli_si128_impl<10>(a);
+        case 11: return _mm_srli_si128_impl<11>(a);
+        case 12: return _mm_srli_si128_impl<12>(a);
+        case 13: return _mm_srli_si128_impl<13>(a);
+        case 14: return _mm_srli_si128_impl<14>(a);
+        case 15: return _mm_srli_si128_impl<15>(a);
+        default: return _mm_setzero_si128();
+    }
+}
+
+// ARM implementation of _mm_alignr_epi8
+template<int imm>
+static inline __m128i _mm_alignr_epi8_impl(__m128i a, __m128i b)
 {
     if (imm >= 32) return _mm_setzero_si128();
     if (imm >= 16) return _mm_srli_si128(a, imm - 16);
     return vextq_u8(b, a, imm);
 }
 
-// ARM implementation of _mm_slli_si128
-static inline __m128i _mm_slli_si128(__m128i a, int imm)
+static inline __m128i _mm_alignr_epi8(__m128i a, __m128i b, int imm)
 {
+    switch(imm) {
+        case 0: return _mm_alignr_epi8_impl<0>(a, b);
+        case 1: return _mm_alignr_epi8_impl<1>(a, b);
+        case 2: return _mm_alignr_epi8_impl<2>(a, b);
+        case 3: return _mm_alignr_epi8_impl<3>(a, b);
+        case 4: return _mm_alignr_epi8_impl<4>(a, b);
+        case 5: return _mm_alignr_epi8_impl<5>(a, b);
+        case 6: return _mm_alignr_epi8_impl<6>(a, b);
+        case 7: return _mm_alignr_epi8_impl<7>(a, b);
+        case 8: return _mm_alignr_epi8_impl<8>(a, b);
+        case 9: return _mm_alignr_epi8_impl<9>(a, b);
+        case 10: return _mm_alignr_epi8_impl<10>(a, b);
+        case 11: return _mm_alignr_epi8_impl<11>(a, b);
+        case 12: return _mm_alignr_epi8_impl<12>(a, b);
+        case 13: return _mm_alignr_epi8_impl<13>(a, b);
+        case 14: return _mm_alignr_epi8_impl<14>(a, b);
+        case 15: return _mm_alignr_epi8_impl<15>(a, b);
+        default: return _mm_setzero_si128();
+    }
+}
+
+// ARM implementation of _mm_slli_si128
+// Shifts the 128-bit value left by imm bytes, shifting in zeros
+template<int imm>
+static inline __m128i _mm_slli_si128_impl(__m128i a)
+{
+    static_assert(imm >= 0 && imm <= 16, "imm must be in range [0, 16]");
     if (imm >= 16) return _mm_setzero_si128();
     if (imm == 0) return a;
-    // Create zero vector and combine
+    
+    // _mm_slli_si128 shifts LEFT by imm bytes, filling with zeros from the right
+    // We can achieve this by concatenating zeros with the original vector
     uint8x16_t zero = vdupq_n_u8(0);
-    return vextq_u8(zero, a, 16 - imm);
+    
+    // Use a byte array approach for clarity and correctness
+    alignas(16) uint8_t temp[32] = {0}; // 16 zeros + space for original data
+    vst1q_u8(&temp[imm], a);  // Store 'a' at offset imm
+    return vld1q_u8(temp);    // Load the first 16 bytes
+}
+
+static inline __m128i _mm_slli_si128(__m128i a, int imm)
+{
+    switch(imm) {
+        case 0: return _mm_slli_si128_impl<0>(a);
+        case 1: return _mm_slli_si128_impl<1>(a);
+        case 2: return _mm_slli_si128_impl<2>(a);
+        case 3: return _mm_slli_si128_impl<3>(a);
+        case 4: return _mm_slli_si128_impl<4>(a);
+        case 5: return _mm_slli_si128_impl<5>(a);
+        case 6: return _mm_slli_si128_impl<6>(a);
+        case 7: return _mm_slli_si128_impl<7>(a);
+        case 8: return _mm_slli_si128_impl<8>(a);
+        case 9: return _mm_slli_si128_impl<9>(a);
+        case 10: return _mm_slli_si128_impl<10>(a);
+        case 11: return _mm_slli_si128_impl<11>(a);
+        case 12: return _mm_slli_si128_impl<12>(a);
+        case 13: return _mm_slli_si128_impl<13>(a);
+        case 14: return _mm_slli_si128_impl<14>(a);
+        case 15: return _mm_slli_si128_impl<15>(a);
+        default: return _mm_setzero_si128();
+    }
 }
 
 // ARM implementation of _mm_shuffle_epi32
-static inline __m128i _mm_shuffle_epi32(__m128i a, int imm)
+template<int imm>
+static inline __m128i _mm_shuffle_epi32_impl(__m128i a)
 {
     uint32x4_t a32 = vreinterpretq_u32_u8(a);
     uint32_t lane0 = vgetq_lane_u32(a32, (imm) & 3);
@@ -187,6 +267,25 @@ static inline __m128i _mm_shuffle_epi32(__m128i a, int imm)
     uint32_t lane2 = vgetq_lane_u32(a32, (imm >> 4) & 3);
     uint32_t lane3 = vgetq_lane_u32(a32, (imm >> 6) & 3);
     uint32x4_t result = vsetq_lane_u32(lane0, vsetq_lane_u32(lane1, vsetq_lane_u32(lane2, vsetq_lane_u32(lane3, vdupq_n_u32(0), 3), 2), 1), 0);
+    return vreinterpretq_u8_u32(result);
+}
+
+static inline __m128i _mm_shuffle_epi32(__m128i a, int imm)
+{
+    uint32x4_t a32 = vreinterpretq_u32_u8(a);
+    uint32_t values[4];
+    
+    // Extract all values first using runtime indices
+    values[0] = vgetq_lane_u32(a32, 0);
+    values[1] = vgetq_lane_u32(a32, 1);
+    values[2] = vgetq_lane_u32(a32, 2);
+    values[3] = vgetq_lane_u32(a32, 3);
+    
+    // Shuffle using the extracted values
+    uint32x4_t result = vsetq_lane_u32(values[(imm) & 3], 
+                       vsetq_lane_u32(values[(imm >> 2) & 3], 
+                       vsetq_lane_u32(values[(imm >> 4) & 3], 
+                       vsetq_lane_u32(values[(imm >> 6) & 3], vdupq_n_u32(0), 3), 2), 1), 0);
     return vreinterpretq_u8_u32(result);
 }
 

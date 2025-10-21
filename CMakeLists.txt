@@ -1,6 +1,6 @@
-project(xmr-stak)
+cmake_minimum_required(VERSION 3.5)
 
-cmake_minimum_required(VERSION 3.4.0)
+project(xmr-stak)
 
 # enforce C++11
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -323,7 +323,7 @@ endif()
 # Explicit march setting for Clang
 ################################################################################
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
     set_source_files_properties(xmrstak/backend/cpu/crypto/cn_gpu_avx.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
 endif()
 

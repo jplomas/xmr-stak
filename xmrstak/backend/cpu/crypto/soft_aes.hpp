@@ -117,7 +117,7 @@ static inline __m128i soft_aesenc(__m128i in, __m128i key) {
     uint32_t y3 = saes_table[0][x3 & 0xff] ^ saes_table[1][(x0 >> 8) & 0xff] ^ saes_table[2][(x1 >> 16) & 0xff] ^ saes_table[3][x2 >> 24];
 
     // Create the output NEON register
-    int32_t values[4] = { y0, y1, y2, y3 };
+    int32_t values[4] = { static_cast<int32_t>(y0), static_cast<int32_t>(y1), static_cast<int32_t>(y2), static_cast<int32_t>(y3) };
     __m128i out = vreinterpretq_u8_s32(vld1q_s32(values));
 
     // XOR with the round key
@@ -138,7 +138,7 @@ static inline __m128i soft_aeskeygenassist(__m128i key, uint8_t rcon) {
     uint32_t r3 = ((s3 >> 8) | (s3 << 24)) ^ rcon;
     
     // Build and return the result
-    int32_t values[4] = { r1, s1, r3, s3 };
+    int32_t values[4] = { static_cast<int32_t>(r1), static_cast<int32_t>(s1), static_cast<int32_t>(r3), static_cast<int32_t>(s3) };
     return vreinterpretq_u8_s32(vld1q_s32(values));
 }
 
